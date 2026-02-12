@@ -37,14 +37,12 @@ data/logs/*
 data/notes/*
 !data/notes/.gitkeep
 data/memory.db
-data/vector_store/
 
 # Knowledge (Track folder, ignore binaries)
-data/knowledge/*
-!data/knowledge/.gitkeep
+data/vector_store/*
+!data/vector_store/.gitkeep
 data/knowledge_db/*
 !data/knowledge_db/.gitkeep
-
 data/profile.json
 test/test_output.txt
 test/test_output_2.txt
