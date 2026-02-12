@@ -31,11 +31,20 @@ ENV/
 .vscode/
 
 # Project Athena Specific
-data/logs/
-data/notes/
+# Data Directories (Track folders, ignore content)
+data/logs/*
+!data/logs/.gitkeep
+data/notes/*
+!data/notes/.gitkeep
 data/memory.db
 data/vector_store/
-data/knowledge_db/
+
+# Knowledge (Track folder, ignore binaries)
+data/knowledge/*
+!data/knowledge/.gitkeep
+data/knowledge_db/*
+!data/knowledge_db/.gitkeep
+
 data/profile.json
 test/test_output.txt
 test/test_output_2.txt
