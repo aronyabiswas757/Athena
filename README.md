@@ -18,7 +18,7 @@
 
 1.  **Clone the Repository**:
     ```bash
-    git clone https://github.com/yourusername/athena.git
+    git clone https://github.com/aronyabiswas757/athena.git
     cd athena
     ```
 
