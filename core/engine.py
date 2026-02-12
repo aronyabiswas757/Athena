@@ -24,36 +24,38 @@ def validate_model_connection():
     try:
         response = requests.get(f"{LM_STUDIO_URL}/models", timeout=5)
         if response.status_code != 200:
-            return False, None
+            return False, None, False
             
         data = response.json()
         available_models = data.get('data', [])
+        
+        # Scenario 3: No loaded LLM detected, preferred model auto load
         if not available_models:
-            return True, None # Connected but no models loaded (rare, usually status check fails)
+            target_model = PREFERRED_MODELS[0]
+            log_decision("ENGINE", "STARTUP", "MODEL_AUTO", f"No models loaded. Attempting auto-load: {target_model}")
+            ACTIVE_MODEL_ID = target_model
+            return True, target_model, False # Not a fallback, it's the requested one
             
-        # 1. Lazy Switch: Check if the CURRENTLY loaded model (usually index 0) is preferred.
-        # This prevents unnecessary reloading if the user manually loaded a good model.
+        # Scenario 2: One of preferred LLM already loaded
         current_model_id = available_models[0]['id']
         for preferred in PREFERRED_MODELS:
             if preferred.lower() in current_model_id.lower():
                 log_decision("ENGINE", "STARTUP", "MODEL_CHECK", f"Keeping currently loaded preferred model: {current_model_id}")
                 ACTIVE_MODEL_ID = current_model_id
-                return True, current_model_id
+                return True, current_model_id, False
 
-        # 2. Priority Switch: If current isn't preferred, find the best one available.
+        # Priority Search (just in case current isn't it, but others are?)
         for preferred in PREFERRED_MODELS:
             for model in available_models:
                 if preferred.lower() in model['id'].lower():
-                    log_decision("ENGINE", "STARTUP", "MODEL_CHECK", f"Found better preferred model: {model['id']}")
                     ACTIVE_MODEL_ID = model['id']
-                    return True, model['id']
+                    return True, model['id'], False
                 
-        # 3. Fallback
+        # Scenario 1: Other LLM already loaded. Use it.
         fallback_model = available_models[0]['id']
-        log_decision("ENGINE", "STARTUP", "MODEL_WARN", f"No preferred models found. Using fallback: '{fallback_model}'")
-        print(f"WARNING: No preferred models found. Using fallback '{fallback_model}'.")
+        log_decision("ENGINE", "STARTUP", "MODEL_WARN", f"Non-preferred model found: '{fallback_model}'")
         ACTIVE_MODEL_ID = fallback_model
-        return True, fallback_model
+        return True, fallback_model, True # IS FALLBACK
         
     except Exception as e:
         log_error("ENGINE", f"Model Validation Failed: {e}")

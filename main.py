@@ -42,13 +42,18 @@ def main():
 
     # Validate Brain
     print("Checking connection to Brain...")
-    is_valid, model_id = engine.validate_model_connection()
+    is_valid, model_id, is_fallback = engine.validate_model_connection()
+    
     if not is_valid:
         print("ERROR: Athena Offline. Could not connect to LM Studio or no models loaded.")
         print("Please ensure LM Studio is running and a model is loaded.")
         sys.exit(1)
     
     print(f"Connected to Brain: {model_id}")
+    
+    if is_fallback:
+        print(f"WARNING: Using non-optimized model '{model_id}'. Performance may vary.")
+        voice.speak("Warning. Non-optimized brain detected.")
     
     # Start the Heart (Monitor)
     heart = monitor.Monitor()
