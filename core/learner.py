@@ -82,27 +82,36 @@ def reflect():
         response.raise_for_status()
         content = response.json()['choices'][0]['message']['content']
         
-        # Robust JSON extraction (same as engine.py)
+        # Robust JSON extraction
         import re
-        content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
         
-        start = content.find('{')
-        end = content.rfind('}')
+        # 1. Strip <think> and [THINK] blocks
+        content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL | re.IGNORECASE)
+        content = re.sub(r'\[THINK\].*?\[/THINK\]', '', content, flags=re.DOTALL | re.IGNORECASE)
         
-        if start != -1 and end != -1:
-            json_str = content[start : end + 1]
-            try:
-                new_profile = json.loads(json_str)
-                save_profile(new_profile)
-                log_decision("LEARNER", "SLEEP_CYCLE", "UPDATE", "Profile updated")
-                return "Reflection complete."
-            except json.JSONDecodeError:
-                log_error("LEARNER", "JSON Decode Error in Reflection")
-                return "Failed to parse reflection JSON."
+        # 2. Try to find markdown JSON block
+        json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, flags=re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
         else:
-            log_error("LEARNER", "No JSON found in reflection response")
-            # Don't show raw content in error if it's huge garbage
-            return "Reflection failed (No JSON)."
+            # 3. Fallback: Find first '{' and last '}'
+            start = content.find('{')
+            end = content.rfind('}')
+            if start != -1 and end != -1:
+                json_str = content[start : end + 1]
+            else:
+                log_error("LEARNER", "No JSON found in reflection response")
+                return "Reflection failed (No JSON)."
+
+        try:
+            new_profile = json.loads(json_str)
+            save_profile(new_profile)
+            log_decision("LEARNER", "SLEEP_CYCLE", "UPDATE", "Profile updated")
+            return "Reflection complete."
+        except json.JSONDecodeError as e:
+            log_error("LEARNER", f"JSON Decode Error in Reflection: {e}")
+            log_error("LEARNER", f"Failed JSON Content: {json_str[:100]}...") # Log start of content for debug
+            return "Failed to parse reflection JSON."
 
     except Exception as e:
         log_error("LEARNER", f"Reflection Error: {e}")
