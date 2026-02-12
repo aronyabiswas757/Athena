@@ -16,8 +16,26 @@ from core.logger import log_decision, log_interaction
 # Logging is setup in core.logger
 
 
+
+def ensure_profile_exists():
+    """Checks if profile.json exists. If not, creates it with default values."""
+    import json
+    profile_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "profile.json")
+    
+    if not os.path.exists(profile_path):
+        print("Profile not found. Creating default 'data/profile.json'...")
+        default_profile = {
+          "user_name": "User",
+          "communication_style": "concise, technical, no fluff",
+          "active_projects": [],
+          "learned_preferences": {}
+        }
+        with open(profile_path, "w") as f:
+            json.dump(default_profile, f, indent=2)
+
 def main():
     print("Initializing Athena...")
+    ensure_profile_exists()
     
     # Initialize DB
     scheduler.init_db()
