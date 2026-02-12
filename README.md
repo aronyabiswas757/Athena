@@ -3,12 +3,16 @@
 **Project Athena** is a modular, offline-first AI assistant designed for productivity and privacy. It integrates Natural Language Understanding (NLU), Retrieval-Augmented Generation (RAG), and Voice Interaction into a lightweight Python application.
 
 ## Core Features
-- **Offline Intelligence**: Powered by local LLMs via LM Studio (verified with `mistralai/ministral-3-3b` and `qwen2.5-3b-instruct`).
+- **Offline Intelligence**: Powered by local LLMs via LM Studio (verified with `qwen2.5`, `ministral`, `deepseek-r1`).
 - **Real-Time Context**: Aware of the current system time and date.
 - **Smart Scheduling**: Manages tasks and reminders with natural language (e.g., "Remind me to call John in 20 minutes").
 - **Hybrid NLU**: Uses a robust mix of LLM intent classification and rule-based fallbacks.
-- **Memory & Reflection**: "Learns" from daily interactions and updates a user profile automatically.
-- **Voice Output**: Provides concise, natural language responses via TTS.
+- **Memory & Reflection**: "Learns" from daily interactions and auto-updates the user profile.
+- **Smart Model Selection**:
+    - **Lazy Switching**: Respects your manually loaded model if it matches your preferences.
+    - **Auto-Load**: Attempts to load your preferred model on startup if none are active.
+    - **Fallback Warning**: Alert you if using a non-optimized model.
+- **Privacy First**: All data (Vector Store, SQL DB, Logs) is local and ignored by Git.
 
 ## Requirements
 - Python 3.10+
@@ -38,6 +42,7 @@
     ```bash
     python main.py
     ```
+    *Note: On first run, Athena will automatically create a default `data/profile.json` user profile.*
 
 2.  **Interact**:
     - Type or speak (if STT enabled) your commands.
@@ -49,11 +54,11 @@
 
 ## Configuration
 Edit `config.py` to adjust settings:
-- `PREFERRED_MODELS`: List of model IDs (priority order). Athena will use the first available one.
+- `PREFERRED_MODELS`: List of model IDs (priority order). Athena uses "Lazy Switching" to respect your loaded model if it matches any tag in this list.
 - `LM_STUDIO_URL`: defaults to `http://localhost:1234/v1`.
 
 ### User Profile
-You can manually edit `data/profile.json` to set preferences, for example:
+Athena manages `data/profile.json` automatically, but you can manually edit `learned_preferences` if needed:
 ```json
 {
   "learned_preferences": {
@@ -62,10 +67,15 @@ You can manually edit `data/profile.json` to set preferences, for example:
 }
 ```
 
-## Structure
+## Project Structure
 - `core/`: Main logic (Engine, Router, Learner).
 - `modules/`: Capabilities (Scheduler, Voice, Librarian).
-- `data/`: Storage (Databases, Logs, Profile).
+- `data/`: Local Storage (Ignored by Git).
+    - `knowledge_db/`: SQLite Database (`athena.db`).
+    - `vector_store/`: FAISS Index (`vectors.index`).
+    - `logs/`: Interaction and Decision logs.
+    - `notes/`: Raw text files for RAG.
+    - `profile.json`: User personality and preferences.
 - `test/`: Test suite.
 
 ## License

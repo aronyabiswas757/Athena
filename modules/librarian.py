@@ -16,11 +16,11 @@ from config import LM_STUDIO_URL, DB_PATH
 
 # Configuration
 VECTOR_DIMENSION = 768  # Nomic Embed Text v1.5
-INDEX_FILE = "data/knowledge/vectors.index"
-MAPPING_FILE = "data/knowledge/mapping.npy" # Maps FAISS ID -> SQLite ID (if needed, or 1:1)
+INDEX_FILE = "data/vector_store/vectors.index"
+MAPPING_FILE = "data/vector_store/mapping.npy" # Maps FAISS ID -> SQLite ID (if needed, or 1:1)
 
 # Ensure directories
-os.makedirs("data/knowledge", exist_ok=True)
+os.makedirs("data/vector_store", exist_ok=True)
 
 # Initialize OpenAI Client (for Embeddings)
 # Pointing to LM Studio Local Server
