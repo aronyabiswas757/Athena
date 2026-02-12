@@ -1,0 +1,21 @@
+{
+  "user_name": "Aronya",
+  "communication_style": "concise, technical, no fluff",
+  "active_projects": [
+    "Project Athena",
+    "Voice Assistant"
+  ],
+  "learned_preferences": {
+    "morning_routine": "Do not disturb before 9 AM",
+    "coding_style": "Python, modular, type-hinted",
+    "time_format_previous": [
+      "12-hour"
+    ],
+    "new_time_format_request": "HH:MM AM/PM DD-MM-YYYY",
+    "reminder_notification_time_format": "12-hour",
+    "future_task_check": true,
+    "upcoming_tasks_query": true,
+    "short_term_reminders_enabled": true,
+    "time_format_preference": "HH:MM AM/PM DD-MM-YYYY"
+  }
+}
