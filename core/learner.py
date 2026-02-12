@@ -85,15 +85,18 @@ def reflect():
         # Robust JSON extraction
         import re
         
-        # 1. Strip <think> and [THINK] blocks
-        content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL | re.IGNORECASE)
-        content = re.sub(r'\[THINK\].*?\[/THINK\]', '', content, flags=re.DOTALL | re.IGNORECASE)
+        # 1. Try to find markdown JSON block (Best Case) - Check this FIRST
+        # Handles ```json and generic ``` blocks
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, flags=re.DOTALL | re.IGNORECASE)
         
-        # 2. Try to find markdown JSON block
-        json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, flags=re.DOTALL)
         if json_match:
             json_str = json_match.group(1)
         else:
+            # 2. If no markdown, strip thought blocks to clean up garbage
+            # Handle unclosed blocks (truncated output) by matching end-of-string '$'
+            content = re.sub(r'<think>.*?(?:</think>|$)', '', content, flags=re.DOTALL | re.IGNORECASE)
+            content = re.sub(r'\[THINK\].*?(?:\[/THINK\]|$)', '', content, flags=re.DOTALL | re.IGNORECASE)
+            
             # 3. Fallback: Find first '{' and last '}'
             start = content.find('{')
             end = content.rfind('}')
@@ -110,7 +113,7 @@ def reflect():
             return "Reflection complete."
         except json.JSONDecodeError as e:
             log_error("LEARNER", f"JSON Decode Error in Reflection: {e}")
-            log_error("LEARNER", f"Failed JSON Content: {json_str[:100]}...") # Log start of content for debug
+            log_error("LEARNER", f"Failed JSON Content: {json_str[:100]}...") 
             return "Failed to parse reflection JSON."
 
     except Exception as e:
