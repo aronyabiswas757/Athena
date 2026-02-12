@@ -31,7 +31,7 @@ LM_STUDIO_SETTINGS = {
 PREFERRED_MODELS = [
     "qwen2.5-3b-instruct",
     "mistralai/ministral-3-3b", 
-    "qwen3-8b"
+    "qwen3" 
 ]
 # Legacy support
 PREFERRED_MODEL = PREFERRED_MODELS[0]

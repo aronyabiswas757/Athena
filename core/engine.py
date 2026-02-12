@@ -31,15 +31,24 @@ def validate_model_connection():
         if not available_models:
             return True, None # Connected but no models loaded (rare, usually status check fails)
             
-        # 1. Priority Check
+        # 1. Lazy Switch: Check if the CURRENTLY loaded model (usually index 0) is preferred.
+        # This prevents unnecessary reloading if the user manually loaded a good model.
+        current_model_id = available_models[0]['id']
+        for preferred in PREFERRED_MODELS:
+            if preferred.lower() in current_model_id.lower():
+                log_decision("ENGINE", "STARTUP", "MODEL_CHECK", f"Keeping currently loaded preferred model: {current_model_id}")
+                ACTIVE_MODEL_ID = current_model_id
+                return True, current_model_id
+
+        # 2. Priority Switch: If current isn't preferred, find the best one available.
         for preferred in PREFERRED_MODELS:
             for model in available_models:
-                if preferred in model['id']:
-                    log_decision("ENGINE", "STARTUP", "MODEL_CHECK", f"Found preferred model: {model['id']}")
+                if preferred.lower() in model['id'].lower():
+                    log_decision("ENGINE", "STARTUP", "MODEL_CHECK", f"Found better preferred model: {model['id']}")
                     ACTIVE_MODEL_ID = model['id']
                     return True, model['id']
                 
-        # 2. Fallback
+        # 3. Fallback
         fallback_model = available_models[0]['id']
         log_decision("ENGINE", "STARTUP", "MODEL_WARN", f"No preferred models found. Using fallback: '{fallback_model}'")
         print(f"WARNING: No preferred models found. Using fallback '{fallback_model}'.")
