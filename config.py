@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Paths
 DATA_DIR = os.path.join(BASE_DIR, "data")
-DB_PATH = os.path.join(DATA_DIR, "athena.db")
+DB_PATH = os.path.join(DATA_DIR, "knowledge_db", "athena.db")
 LOG_DIR = os.path.join(DATA_DIR, "logs")
 
 MODELS_DIR = os.path.join(BASE_DIR, "models")
@@ -29,10 +29,12 @@ LM_STUDIO_SETTINGS = {
 
 # Model Identification
 PREFERRED_MODELS = [
-    "qwen2.5-3b-instruct",
+    "ministral-3-3b-reasoning-2512",
     "mistralai/ministral-3-3b", 
-    "qwen3" 
+    "qwen2.5-3b-instruct",
+    "deepseek/deepseek-r1-0528-qwen3-8b",
 ]
+
 # Legacy support
 PREFERRED_MODEL = PREFERRED_MODELS[0]
 
