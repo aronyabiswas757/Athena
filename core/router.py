@@ -17,6 +17,10 @@ def route_intent(data):
         task_name = data.get("task_name")
         relative_time = data.get("relative_time")
         
+        # Relaxed Validation: If task_name is missing but we have time, assume "Reminder"
+        if not task_name and relative_time:
+            task_name = "Reminder"
+        
         if not task_name or not relative_time:
             return "Missing task details."
             

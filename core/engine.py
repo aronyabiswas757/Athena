@@ -249,7 +249,10 @@ def generate_answer_from_notes(user_question):
         with open("data/profile.json", "r") as f:
             profile = f.read()
     except Exception:
-        pass
+        log_error("ENGINE", "Could not load profile.json")
+    
+    # DEBUG: Check what profile is loaded
+    # log_decision("ENGINE", "DEBUG", "PROFILE_LOADED", f"Length: {len(profile)}")
 
     try:
         from modules import librarian
@@ -278,19 +281,17 @@ def generate_answer_from_notes(user_question):
     User Profile:
     {profile}
     
-    Instructions:
-    1. Answer the question based on the Context below.
-    2. If asked for the time:
-       - CHECK 'time_format_preference' OR 'new_time_format_request' in User Profile.
-       - IF FOUND, use that format string EXACTLY.
-         - You MUST replace ALL placeholders (e.g. DD, MM, YYYY) even if the user only asked for "Time".
-         - Example: If format is "HH:MM DD-MM-YYYY", output "01:30 PM 12-02-2026".
-       - IF NOT FOUND, use the standard format.
-       - CONSTRUCT the string using the Data above.
-       - Output ONLY the final formatted string.
-    
     Context:
     {context}
+    
+    Instructions:
+    1. Answer the question based on the Context above.
+    2. If asked for the time:
+       - CHECK 'time_format', 'time_presentation_for_just_time', or 'time_presentation_for_full_time' in User Profile.
+       - IF FOUND, use that format string/instruction.
+       - IF "12-hour" is specified in Profile, YOU MUST use the 'Time (12h)' value provided above (e.g. "01:30 PM"). Do NOT use 24-hour numbers.
+       - CONSTRUCT the string using the Data above.
+       - Output ONLY the final formatted string.
     
     Question: {user_question}
     

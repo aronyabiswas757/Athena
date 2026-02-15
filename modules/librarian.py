@@ -12,7 +12,7 @@ import sqlite3
 import numpy as np
 import faiss
 from openai import OpenAI
-from config import LM_STUDIO_URL, DB_PATH
+from config import LM_STUDIO_URL, DB_PATH, EMBEDDING_MODEL_ID
 
 # Configuration
 VECTOR_DIMENSION = 768  # Nomic Embed Text v1.5
@@ -34,12 +34,12 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('''
+    c.execute(f'''
         CREATE TABLE IF NOT EXISTS knowledge (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             source TEXT,
             content TEXT,
-            embedding_model TEXT DEFAULT 'nomic-v1.5',
+            embedding_model TEXT DEFAULT '{EMBEDDING_MODEL_ID}',
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -54,7 +54,7 @@ def get_embedding(text):
     try:
         response = client.embeddings.create(
             input=[text],
-            model="text-embedding-nomic-embed-text-v1.5" # User specified model
+            model=EMBEDDING_MODEL_ID # User specified model
         )
         return response.data[0].embedding
     except Exception as e:

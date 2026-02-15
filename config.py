@@ -27,6 +27,11 @@ LM_STUDIO_SETTINGS = {
     "timeout": 30
 } 
 
+# Embedding Settings
+# Recommended: "text-embedding-nomic-embed-text-v1.5" (Lightweight, High Quality)
+# Avoid large models (e.g. 2GB+) for local assistants.
+EMBEDDING_MODEL_ID = "text-embedding-nomic-embed-text-v1.5" 
+
 # Model Identification
 PREFERRED_MODELS = [
     "mistralai/ministral-3-3b", 

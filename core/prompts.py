@@ -13,17 +13,24 @@ Fields:
 - new_state: For "state_change" intent. Values: "IDLE", "DEEP_WORK", "DO_NOT_DISTURB".
 - preference_data: For "preference_update", the specific preference detail (e.g., "12-hour format").
 
+
 Example 1: "Remind me to call John in 20 minutes"
 Output 1: { "intent": "schedule_add", "task_name": "Call John", "relative_time": "20 minutes" }
 
-Example 2: "I'm going into deep work"
-Output 2: { "intent": "state_change", "new_state": "DEEP_WORK" }
+Example 2: "Set a reminder for 5 seconds"
+Output 2: { "intent": "schedule_add", "task_name": "Reminder", "relative_time": "5 seconds" }
 
-Example 3: "What is the status of Project Athena?"
-Output 3: { "intent": "knowledge_query", "task_name": null, "relative_time": null }
+Example 3: "Create a reminder for 5 seconds for study"
+Output 3: { "intent": "schedule_add", "task_name": "Study", "relative_time": "5 seconds" }
 
-Example 4: "Do I have any tasks?" 
-Output 4: { "intent": "query_schedule", "task_name": null, "relative_time": null }
+Example 4: "What is the status of Project Athena?"
+Output 4: { "intent": "knowledge_query", "task_name": null, "relative_time": null }
+
+Example 5: "Do I have any tasks?" 
+Output 5: { "intent": "query_schedule", "task_name": null, "relative_time": null }
+
+Example 6: "Always use 12 hour format"
+Output 6: { "intent": "preference_update", "preference_data": "Always use 12 hour format" }
 """
 
 SUMMARY_TRANSLATOR_PROMPT = """
