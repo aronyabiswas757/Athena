@@ -3,7 +3,7 @@
 **Project Athena** is a modular, offline-first AI assistant designed for productivity and privacy. It integrates Natural Language Understanding (NLU), Retrieval-Augmented Generation (RAG), and Voice Interaction into a lightweight Python application.
 
 ## Core Features
-- **Offline Intelligence**: Powered by local LLMs via LM Studio (verified with `qwen2.5`, `ministral`, `deepseek-r1`).
+- **Offline Intelligence**: Powered by local LLMs via LM Studio (verified with `ministral`,  `qwen2.5`).
 - **Real-Time Context**: Aware of the current system time and date.
 - **Smart Scheduling**: Manages tasks and reminders with natural language (e.g., "Remind me to call John in 20 minutes").
 - **Hybrid NLU**: Uses a robust mix of LLM intent classification and rule-based fallbacks.
@@ -11,7 +11,8 @@
 - **Smart Model Selection**:
     - **Lazy Switching**: Respects your manually loaded model if it matches your preferences.
     - **Auto-Load**: Attempts to load your preferred model on startup if none are active.
-    - **Fallback Warning**: Alert you if using a non-optimized model.
+    - **Auto-Load**: Attempts to load your preferred model on startup if none are active.
+    - **Active Probe**: If no model is loaded, Athena actively probes the list of preferred models to find one that works.
 - **Privacy First**: All data (Vector Store, SQL DB, Logs) is local and ignored by Git.
 
 ## Requirements
@@ -32,7 +33,7 @@
     ```
 
 3.  **Configure LM Studio**:
-    - Load a model (e.g., `qwen2.5-3b-instruct`).
+    - Load a model (e.g., `mistralai/ministral-3-3b`).
     - Start the Local Server on port `1234`.
     - Ensure `Context Handling` is set to keep system prompts.
 

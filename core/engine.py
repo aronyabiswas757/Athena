@@ -15,52 +15,74 @@ ACTIVE_MODEL_ID = None
 def validate_model_connection():
     """
     Checks if LM Studio is running and selects the best available model.
-    Priority:
-    1. First match from PREFERRED_MODELS list.
-    2. Any loaded model (Fallback).
-    Returns: (is_connected, model_id_to_use)
+    Logic:
+    1. Scenario 1: If ANY model is already loaded, use it (Irrespective of config).
+    2. Scenario 2 & 3: If NO model is loaded, iterate PREFERRED_MODELS and try to "Force Open" (Active Probe).
+    3. Scenario 4: If all fail, abort.
+    
+    Returns: (is_connected, model_id, is_fallback)
     """
     global ACTIVE_MODEL_ID
+    
     try:
-        response = requests.get(f"{LM_STUDIO_URL}/models", timeout=5)
+        # Step 1: Check what is currently loaded
+        try:
+            response = requests.get(f"{LM_STUDIO_URL}/models", timeout=5)
+        except requests.exceptions.ConnectionError:
+            log_decision("ENGINE", "STARTUP", "CONN_FAIL", "Could not connect to LM Studio (Server Down).")
+            return False, None, False
+
         if response.status_code != 200:
             return False, None, False
             
         data = response.json()
-        available_models = data.get('data', [])
+        loaded_models = data.get('data', [])
         
-        # Scenario 3: No loaded LLM detected, preferred model auto load
-        if not available_models:
-            target_model = PREFERRED_MODELS[0]
-            log_decision("ENGINE", "STARTUP", "MODEL_AUTO", f"No models loaded. Attempting auto-load: {target_model}")
-            ACTIVE_MODEL_ID = target_model
-            return True, target_model, False # Not a fallback, it's the requested one
+        # Scenario 1: An LLM is already loaded. Use it.
+        if loaded_models:
+            active_model = loaded_models[0]['id']
+            log_decision("ENGINE", "STARTUP", "MODEL_FOUND", f"Using loaded model: {active_model}")
+            ACTIVE_MODEL_ID = active_model
+            # Treat as valid (is_fallback=False) to suppress warnings, per user "Use it" instruction.
+            return True, active_model, False
             
-        # Scenario 2: One of preferred LLM already loaded
-        current_model_id = available_models[0]['id']
-        for preferred in PREFERRED_MODELS:
-            if preferred.lower() in current_model_id.lower():
-                log_decision("ENGINE", "STARTUP", "MODEL_CHECK", f"Keeping currently loaded preferred model: {current_model_id}")
-                ACTIVE_MODEL_ID = current_model_id
-                return True, current_model_id, False
-
-        # Priority Search (just in case current isn't it, but others are?)
-        for preferred in PREFERRED_MODELS:
-            for model in available_models:
-                if preferred.lower() in model['id'].lower():
-                    ACTIVE_MODEL_ID = model['id']
-                    return True, model['id'], False
-                
-        # Scenario 1: Other LLM already loaded. Use it.
-        fallback_model = available_models[0]['id']
-        log_decision("ENGINE", "STARTUP", "MODEL_WARN", f"Non-preferred model found: '{fallback_model}'")
-        ACTIVE_MODEL_ID = fallback_model
-        return True, fallback_model, True # IS FALLBACK
+        # Scenario 2 & 3: No LLM loaded. Force open priority list.
+        log_decision("ENGINE", "STARTUP", "MODEL_AUTO", "No models loaded. Attempting Active Probe sequence...")
         
+        for priority_model in PREFERRED_MODELS:
+            print(f"Attempting to load priority model: {priority_model}...")
+            
+            # Active Probe: Send a tiny dummy request to force JIT loading
+            probe_payload = {
+                "model": priority_model,
+                "messages": [{"role": "user", "content": "ping"}],
+                "max_tokens": 1
+            }
+            
+            try:
+                # Long timeout to allow for JIT loading (Model Load could take time)
+                # LM Studio usually handles the load and then responds.
+                probe_response = requests.post(f"{LM_STUDIO_URL}/chat/completions", json=probe_payload, timeout=30)
+                
+                if probe_response.status_code == 200:
+                    log_decision("ENGINE", "STARTUP", "MODEL_LOADED", f"Successfully loaded: {priority_model}")
+                    ACTIVE_MODEL_ID = priority_model
+                    return True, priority_model, False
+                else:
+                    log_decision("ENGINE", "STARTUP", "MODEL_FAIL", f"Failed to load {priority_model}: {probe_response.status_code}")
+                    continue # Try next model
+                    
+            except requests.exceptions.RequestException as e:
+                 log_decision("ENGINE", "STARTUP", "MODEL_ERR", f"Error loading {priority_model}: {e}")
+                 continue # Try next model
+
+        # Scenario 4: No LLM loaded or available (All probes failed)
+        log_error("ENGINE", "All preferred models failed to load.")
+        return False, None, False
+
     except Exception as e:
         log_error("ENGINE", f"Model Validation Failed: {e}")
-        return False, None
-
+        return False, None, False
 def process_input(user_text, model_id=None):
     """
     Sends user text to the LLM and returns structured JSON.

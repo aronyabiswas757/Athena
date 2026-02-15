@@ -29,9 +29,9 @@ LM_STUDIO_SETTINGS = {
 
 # Model Identification
 PREFERRED_MODELS = [
-    "ministral-3-3b-reasoning-2512",
     "mistralai/ministral-3-3b", 
     "qwen2.5-3b-instruct",
+    "ministral-3-3b-reasoning-2512",
     "deepseek/deepseek-r1-0528-qwen3-8b",
 ]
 

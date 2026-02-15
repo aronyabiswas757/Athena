@@ -51,10 +51,6 @@ def main():
     
     print(f"Connected to Brain: {model_id}")
     
-    if is_fallback:
-        print(f"WARNING: Using non-optimized model '{model_id}'. Performance may vary.")
-        voice.speak("Warning. Non-optimized brain detected.")
-    
     # Start the Heart (Monitor)
     heart = monitor.Monitor()
     heart.start()
